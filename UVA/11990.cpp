@@ -9,6 +9,8 @@ using namespace std;
 
 int n,m;
 
+typedef long long ll;
+
 struct node{
 	public:
 		int x,y,z;//idx,val,tim
@@ -30,18 +32,18 @@ bool cmpy1(node u,node v){
 	return u.y>v.y;
 }
 
-int tree[MAX_N];
-int de[MAX_N];
+ll tree[MAX_N];
+ll de[MAX_N];
 
-void add(int i,int x){
+void add(int i,ll x){
 	while(i<MAX_N){
 		tree[i]+=x;
 		i+=i&(-i);
 	}
 }
 
-int query(int i){
-	int res=0;
+ll query(int i){
+	ll res=0;
 	while(i){
 		res+=tree[i];
 		i-=i&(-i);
@@ -118,15 +120,15 @@ int main(){
 		sort(a+1,a+1+n,cmpx1);
 		CDQ(1,n,1);
 		sort(a+1,a+1+n,cmpx0);
-		int ans=0;
-		for(int i=1;i<=m+1;i++)cout<<de[i]<<" ";
-		cout<<endl;
+		ll ans=0;
+		/*for(int i=1;i<=m+1;i++)cout<<de[i]<<" ";
+		cout<<endl;*/
 		for(int i=1;i<=n;i++){
 			ans+=query(a[i].y-1);
 			add(a[i].y,1);
 		}
 		for(int i=1;i<=m;i++){
-			printf("%d\n",ans);
+			printf("%lld\n",ans);
 			ans-=de[i];
 		}
 	}
