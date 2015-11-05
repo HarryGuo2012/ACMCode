@@ -19,7 +19,7 @@ using namespace std;
 
 typedef long long ll;
 
-const ll Mod=1e18+23;
+const ll Mod=1e18+203;
 
 ll check(ll a,ll b){
 	return (log(a)+log(b)>log(Mod))?Mod:a*b;
