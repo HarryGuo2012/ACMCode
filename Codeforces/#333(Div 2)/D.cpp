@@ -41,36 +41,33 @@ int main(){
 		R[i]-=2;L[i]--;
 	}
 	init();
+	/*
 	cout<<"---"<<endl;
 	for(int i=0;i<q;i++)cout<<L[i]<<" "<<R[i]<<endl;
 	for(int i=0;i<n;i++)cout<<i<<" ";
 	cout<<endl;
 	for(int i=0;i<n;i++)cout<<b[i]<<" ";
 	cout<<endl;
+	*/
 	for(int i=0;i<n;i++){
-		int l=0,r=i-1;
 		int x,y;
-		while(l+1<r){
-			int m=(l+r)>>1;
-			if(RMQ(m,i-1)<b[i])
-				r=m;
-			else 
-				l=m;
+		int l=-1,r=i-1;
+		while(r-l>1){
+			int mid=(r+l)>>1;
+			if(RMQ(mid,i-1)<=b[i])r=mid;
+			else l=mid;
 		}
 		x=r;
-		if(i==0||b[i-1]>b[i])x=i;
-		l=i+1,r=n-1;
-		while(l+1<r){
-			int m=(l+r)>>1;
-			if(RMQ(i+1,m)<=b[i])
-				l=m;
-			else
-				r=m;
+		if(i==0||b[i]<b[i-1])x=i;
+		l=i+1,r=n;
+		while(r-l>1){
+			int mid=(r+l)>>1;
+			if(RMQ(i+1,mid)<b[i])l=mid;
+			else r=mid;
 		}
 		y=l;
-		if(i==n-1||b[i+1]>b[i])y=i;
-		if(y!=n-1&&b[y+1]==b[y])y=n-1;
-		cout<<x<<" "<<y<<endl;
+		if(i==n-1||b[i]<=b[i+1])y=i;
+		//cout<<x<<" "<<y<<endl;
 		for(int j=0;j<q;j++)
 			if(L[j]<=i&&i<=R[j])
 				ans[j]=ans[j]+(ll)(min(R[j],y)-i+1)*(i-max(L[j],x)+1)*b[i];
