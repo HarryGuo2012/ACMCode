@@ -1,20 +1,19 @@
 #include<iostream>
 #include<cstring>
 #include<vector>
-#include<queue>
-#include<map>
 #include<cstdio>
-#include<set>
+#include<queue>
+#include<cstdio>
 #include<algorithm>
-#include<unordered_map>
+#include<climits>
 #define MAX_N 100005
+#define MAX_S 18
 using namespace std;
 
-int n,m;
 namespace fastIO{
-    #define BUF_SIZE 100000
-    #define OUT_SIZE 100000
-    #define ll long long
+#define BUF_SIZE 100000
+#define OUT_SIZE 100000
+#define ll long long
     //fread->read
     bool IOerror=0;
     inline char nc(){
@@ -99,15 +98,15 @@ namespace fastIO{
     //scanf->read
     inline void read2(int &x){scanf("%d",&x);}
     inline void read2(ll &x){
-        #ifdef _WIN32
-            scanf("%I64d",&x);
-        #else
+#ifdef _WIN32
+        scanf("%I64d",&x);
+#else
         #ifdef __linux
             scanf("%lld",&x);
         #else
             puts("error:can't recognize the system!");
         #endif
-        #endif
+#endif
     }
     inline void read2(double &x){scanf("%lf",&x);}
     inline void read2(char *s){scanf("%s",s);}
@@ -149,8 +148,8 @@ namespace fastIO{
         }
         void print(double x,int y){
             static ll mul[]={1,10,100,1000,10000,100000,1000000,10000000,100000000,
-                1000000000,10000000000LL,100000000000LL,1000000000000LL,10000000000000LL,
-                100000000000000LL,1000000000000000LL,10000000000000000LL,100000000000000000LL};
+                             1000000000,10000000000LL,100000000000LL,1000000000000LL,10000000000000LL,
+                             100000000000000LL,1000000000000000LL,10000000000000000LL,100000000000000000LL};
             if (x<-1e-12)out('-'),x=-x;x*=mul[y];
             ll x1=(ll)floor(x); if (x-floor(x)>=0.5)++x1;
             ll x2=x1/mul[y],x3=x1-x2*mul[y]; print(x2);
@@ -204,73 +203,228 @@ namespace fastIO{
     inline void print2(char x){printf("%c",x);}
     inline void println2(char x){printf("%c\n",x);}
     inline void print2(ll x){
-        #ifdef _WIN32
-            printf("%I64d",x);
-        #else
+#ifdef _WIN32
+        printf("%I64d",x);
+#else
         #ifdef __linux
             printf("%lld",x);
         #else
             puts("error:can't recognize the system!");
         #endif
-        #endif
+#endif
     }
     inline void println2(ll x){print2(x);printf("\n");}
     inline void println2(){printf("\n");}
-    #undef ll
-    #undef OUT_SIZE
-    #undef BUF_SIZE
+#undef ll
+#undef OUT_SIZE
+#undef BUF_SIZE
+};
+//////////////////////////////////////
+struct BitTree {
+public:
+    vector<int> v;
+
+    BitTree(int size) {
+        //cout<<size<<endl;
+        v.clear();
+        v.resize(size + 3);
+    }
+
+    BitTree() { v.resize(0); }
+
+    int sum(int i) {
+        if (i > v.size())i = v.size() - 1;
+        if(i<0)return 0;
+        int res = 0;
+        while (i) {
+            res += v[i];
+            i -= i & (-i);
+        }
+        return res;
+    }
+
+    void update(int i, int x) {
+        while (i < v.size()) {
+            v[i] += x;
+            i += i & (-i);
+        }
+    }
 };
 
-unordered_map<int,int> father[MAX_N],ans[MAX_N];
+struct Node {
+public:
+    int father, size;
+    BitTree bitTree;
+    BitTree bitTree1;
 
-inline int Find(int a,int c){
-    if(father[c][a]==a)return a;
-    return father[c][a]=Find(father[c][a],c);
-}
+    Node(int f, int s) : father(f), size(s), bitTree(s), bitTree1(s) { }
 
-inline void unionSet(int a,int b,int c){
-    if(father[c].find(a)==father[c].end())father[c][a]=a;
-    if(father[c].find(b)==father[c].end())father[c][b]=b;
-    int u=Find(a,c),v=Find(b,c);
-    if(u==v)return;
-    father[c][u]=v;
-}
+    Node() { }
+};
 
-vector<int> se[MAX_N];
+vector<int> G[MAX_N];
+int N;
+int weight[MAX_N];
+int ancestor[MAX_N][MAX_S];
+int dis[MAX_N];
 
-int main(){
-    fastIO::read1(n);
-    fastIO::read1(m);
-    for(int i=0;i<m;i++){
-        int a,b,c;
-        fastIO::read1(a);fastIO::read1(b);fastIO::read1(c);
-        se[a].push_back(c);
-        se[b].push_back(c);
-        unionSet(a,b,c);
+struct LCA {
+public:
+    LCA() {
+        memset(ancestor, 0, sizeof(ancestor));
+        memset(dis, 0, sizeof(dis));
     }
-    for(int i=1;i<=n;i++){
-        sort(se[i].begin(),se[i].end());
-        auto it = unique (se[i].begin(), se[i].end());  
-        se[i].resize( distance(se[i].begin(),it) ); 
+
+    void dfs(int u, int p) {
+        dis[u] = dis[p] + 1;
+        ancestor[u][0] = p;
+        for (int i = 0; i < G[u].size(); i++) {
+            int v = G[u][i];
+            if (v == p)continue;
+            dfs(v, u);
+        }
     }
-    int q;
-    fastIO::read1(q);
-    while(q--){
-        int a,b;
-        fastIO::read1(a);fastIO::read1(b);
-        if(se[a].size()>se[b].size())swap(a,b);
-        if(ans[a].find(b)!=ans[a].end()){
-            printf("%d\n",ans[a][b]);
-            continue;
+
+    void getAncestor() {
+        dfs(1, 0);
+        for (int i = 1; i < MAX_S; i++)
+            for (int j = 1; j <= N; j++)
+                ancestor[i][j] = ancestor[ancestor[i][j - 1]][j - 1];
+    }
+
+    int getLca(int u, int v) {
+        if (dis[u] < dis[v])swap(u, v);
+        for (int i = MAX_S - 1; i >= 0; i--) {
+            if (dis[ancestor[u][i]] >= dis[v]) {
+                u = ancestor[u][i];
+                if (dis[u] == dis[v])break;
+            }
         }
-        int cnt=0;
-        for(auto c:se[a]){
-            auto it=lower_bound(se[b].begin(),se[b].end(),c);
-            if(it==se[b].end()||*it!=c)continue;
-            if(Find(a,c)==Find(b,c))cnt++;
+        if (u == v)return u;
+        for (int i = MAX_S - 1; i >= 0; i--) {
+            if (ancestor[u][i] != ancestor[v][i]) {
+                u = ancestor[u][i];
+                v = ancestor[v][i];
+            }
         }
-        ans[a][b]=cnt;
-        printf("%d\n",cnt);
+        return ancestor[u][0];
+    }
+
+    int getDis(int u, int v) {
+        if(u==0)return dis[v];
+        if(v==0)return dis[u];
+        int l = getLca(u, v);
+        return dis[u] + dis[v] - 2 * dis[l];
+    }
+};
+
+bool vis[MAX_N];
+int siz[MAX_N];
+Node node[MAX_N];
+
+struct CentroidTree {
+public:
+    LCA lca;
+
+    CentroidTree() {
+        memset(vis, 0, sizeof(vis));
+        memset(siz, 0, sizeof(siz));
+        lca = LCA();
+    }
+
+    void getSubtreeSize(int u, int p) {
+        siz[u] = 1;
+        for (int i = 0; i < G[u].size(); i++) {
+            int v = G[u][i];
+            if (vis[v] || v == p)continue;
+            getSubtreeSize(v, u);
+            siz[u] += siz[v];
+        }
+    }
+
+    void searchCentroid(int u, int p, int totSize, int &centroid, int &minMaxSub) {
+        int maxSub = -1;
+        for (int i = 0; i < G[u].size(); i++) {
+            int v = G[u][i];
+            if (v == p || vis[v])continue;
+            maxSub = max(siz[v], maxSub);
+        }
+        maxSub = max(totSize - siz[u], maxSub);
+        if (maxSub < minMaxSub)centroid = u, minMaxSub = maxSub;
+        for (int i = 0; i < G[u].size(); i++) {
+            int v = G[u][i];
+            if (v == p || vis[v])continue;
+            searchCentroid(v, u, totSize, centroid, minMaxSub);
+        }
+    }
+
+    void buildTree(int u, int p) {
+        getSubtreeSize(u, 0);
+        int nowCentroid = u, minMaxSub = INT_MAX;
+        searchCentroid(u, 0, siz[u], nowCentroid, minMaxSub);
+        vis[nowCentroid] = 1;
+        node[nowCentroid] = Node(p, siz[u]);
+        for (int i = 0; i < G[nowCentroid].size(); i++) {
+            int v = G[nowCentroid][i];
+            if (vis[v])continue;
+            buildTree(v, nowCentroid);
+        }
+    }
+
+    void Update(int u, int x) {
+        int v = u;
+        while (v) {
+            int d = lca.getDis(u, v),d1=lca.getDis(node[v].father,u);
+            node[v].bitTree.update(d+1, x);
+            if(node[v].father)
+                node[v].bitTree1.update(d1+1,x);
+            v = node[v].father;
+        }
+    }
+
+    int Query(int u, int d) {
+        int v = u, res = 0;
+        while (v) {
+            res += node[v].bitTree.sum(d+1);
+            res -= node[v].bitTree1.sum(d+1);
+            v = node[v].father;
+        }
+        return res;
+    }
+}CT;
+
+int Q;
+
+int main() {
+    while (scanf("%d%d",&N,&Q)==2) {
+        for (int i = 1; i <= N; i++)
+            fastIO::read1(weight[i]);
+        for (int i = 1; i <= N; i++)G[i].clear();
+        for (int i = 1; i <= N - 1; i++) {
+            int u, v;
+            fastIO::read1(u);
+            fastIO::read1(v);
+            G[u].push_back(v);
+            G[v].push_back(u);
+        }
+        CT = CentroidTree();
+        CT.buildTree(1, 0);
+        CT.lca.getAncestor();
+        for (int i = 1; i <= N; i++)CT.Update(i, weight[i]);
+        while (Q--) {
+            char op[2];
+            int x, y;
+            fastIO::read1(op);
+            fastIO::read1(x);
+            fastIO::read1(y);
+            //scanf("%s %d%d", op, &x, &y);
+            if (op[0] == '!') {
+                CT.Update(x, y - weight[x]);
+                weight[x] = y;
+            }
+            else
+                printf("%d\n",CT.Query(x,y));
+        }
     }
     return 0;
 }
