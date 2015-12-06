@@ -7,7 +7,7 @@
 #include<algorithm>
 #include<climits>
 #define MAX_N 100005
-#define MAX_S 18
+#define MAX_S 24
 using namespace std;
 
 namespace fastIO{
@@ -220,6 +220,7 @@ namespace fastIO{
 #undef BUF_SIZE
 };
 //////////////////////////////////////
+
 struct BitTree {
 public:
     vector<int> v;
@@ -228,12 +229,13 @@ public:
         //cout<<size<<endl;
         v.clear();
         v.resize(size + 3);
+		for(int i=0;i<v.size();i++)v[i]=0;
     }
 
     BitTree() { v.resize(0); }
 
     int sum(int i) {
-        if (i > v.size())i = v.size() - 1;
+        if (i >= (int)v.size())i = v.size() - 1;
         if(i<0)return 0;
         int res = 0;
         while (i) {
@@ -244,7 +246,7 @@ public:
     }
 
     void update(int i, int x) {
-        while (i < v.size()) {
+        while (i < (int)v.size()) {
             v[i] += x;
             i += i & (-i);
         }
@@ -253,11 +255,12 @@ public:
 
 struct Node {
 public:
-    int father, size;
+    int father,size,psize;
     BitTree bitTree;
     BitTree bitTree1;
 
-    Node(int f, int s) : father(f), size(s), bitTree(s), bitTree1(s) { }
+    Node(int f, int s,int ps) : size(s),psize(ps),father(f), bitTree(s), bitTree1(ps) { 
+	}
 
     Node() { }
 };
@@ -287,8 +290,8 @@ public:
 
     void getAncestor() {
         dfs(1, 0);
-        for (int i = 1; i < MAX_S; i++)
-            for (int j = 1; j <= N; j++)
+        for (int j = 1; j < MAX_S; j++)
+            for (int i = 1; i <= N; i++)
                 ancestor[i][j] = ancestor[ancestor[i][j - 1]][j - 1];
     }
 
@@ -358,16 +361,18 @@ public:
         }
     }
 
-    void buildTree(int u, int p) {
+    void buildTree(int u, int p,int ps) {
         getSubtreeSize(u, 0);
         int nowCentroid = u, minMaxSub = INT_MAX;
         searchCentroid(u, 0, siz[u], nowCentroid, minMaxSub);
         vis[nowCentroid] = 1;
-        node[nowCentroid] = Node(p, siz[u]);
+        node[nowCentroid] = Node(p, siz[u], ps);
+		//if(ps<siz[u])cout<<"fuck"<<endl;
+		int tmp=siz[u];
         for (int i = 0; i < G[nowCentroid].size(); i++) {
             int v = G[nowCentroid][i];
             if (vis[v])continue;
-            buildTree(v, nowCentroid);
+            buildTree(v, nowCentroid,tmp);
         }
     }
 
@@ -385,8 +390,10 @@ public:
     int Query(int u, int d) {
         int v = u, res = 0;
         while (v) {
-            res += node[v].bitTree.sum(d+1);
-            res -= node[v].bitTree1.sum(d+1);
+            int di=lca.getDis(u,v),di1=lca.getDis(u,node[v].father);
+            res += node[v].bitTree.sum(d-di+1);
+            if(node[v].father)
+                res -= node[v].bitTree1.sum(d-di1+1);
             v = node[v].father;
         }
         return res;
@@ -396,6 +403,8 @@ public:
 int Q;
 
 int main() {
+	//freopen("data.in","r",stdin);
+	//freopen("WA.out","w",stdout);
     while (scanf("%d%d",&N,&Q)==2) {
         for (int i = 1; i <= N; i++)
             fastIO::read1(weight[i]);
@@ -408,7 +417,7 @@ int main() {
             G[v].push_back(u);
         }
         CT = CentroidTree();
-        CT.buildTree(1, 0);
+        CT.buildTree(1, 0,0);
         CT.lca.getAncestor();
         for (int i = 1; i <= N; i++)CT.Update(i, weight[i]);
         while (Q--) {
@@ -428,3 +437,5 @@ int main() {
     }
     return 0;
 }
+
+
