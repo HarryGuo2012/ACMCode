@@ -95,6 +95,22 @@ struct Trie{
 			build(v,u);
 		}
 	}
+	int query(int u,int v,int K){
+		int l=lca.query(u,v);
+		int ans=a[l]^K;
+		l=root[l],u=root[u],v=root[v];
+		int tmp=0;
+		for(int i=15;i>=0;i--){
+			int now=(K>>i)&1;
+			now^=1;
+			int x=tree[u].child[now].cnt+tree[v].child[now].cnt-2*tree[l].child[now].cnt;
+			if(x==0)now^=1;
+			u=tree[u].child[now],v=tree[v].child[now],l=tree[l].child[now];
+			tmp|=(now<<i);
+		}
+		ans=max(ans,tmp^K);
+		return ans;
+	}
 }trie;
 
 int main(){
