@@ -24,12 +24,12 @@ struct LCA{
 		getAncestor();
 	}
 	void dfs(int u,int p){
-		deep[u]=1;
+		deep[u]=deep[p]+1;
+		ancestor[u][0]=p;
 		for(int i=0;i<G[u].size();i++){
 			int v=G[u][i];
 			if(v==p)continue;
 			dfs(v,u);
-			deep[u]+=deep[v];
 		}
 	}
 	void getAncestor(){
@@ -39,11 +39,11 @@ struct LCA{
 				ancestor[i][j]=ancestor[ancestor[i][j-1]][j-1];
 	}
 	int getLca(int u, int v) {
-        if (dis[u] < dis[v])swap(u, v);
+        if (deep[u] < deep[v])swap(u, v);
         for (int i = MAX_S - 1; i >= 0; i--) {
-            if (dis[ancestor[u][i]] >= dis[v]) {
+            if (deep[ancestor[u][i]] >= deep[v]) {
                 u = ancestor[u][i];
-                if (dis[u] == dis[v])break;
+                if (deep[u] == deep[v])break;
             }
         }
         if (u == v)return u;
@@ -62,7 +62,7 @@ struct Node{
 	int child[2];
 	int cnt;
 	Node(){
-		memset(child,-1,sizeof(child));
+		memset(child,0,sizeof(child));
 		cnt=0;
 	}
 };
@@ -72,8 +72,10 @@ int root[MAX_N],treeCnt;
 
 struct Trie{
 	Trie(){
+		lca=LCA();
 		for(int i=0;i<MAX_T;i++)tree[i]=Node();
 		treeCnt=1;root[0]=0;
+		build(1,0);
 	}
 	int insert(int u,int x){
 		tree[treeCnt]=tree[u];
@@ -96,23 +98,40 @@ struct Trie{
 		}
 	}
 	int query(int u,int v,int K){
-		int l=lca.query(u,v);
+		int l=lca.getLca(u,v);
 		int ans=a[l]^K;
 		l=root[l],u=root[u],v=root[v];
 		int tmp=0;
 		for(int i=15;i>=0;i--){
 			int now=(K>>i)&1;
 			now^=1;
-			int x=tree[u].child[now].cnt+tree[v].child[now].cnt-2*tree[l].child[now].cnt;
+			int x=tree[tree[u].child[now]].cnt+tree[tree[v].child[now]].cnt-2*tree[tree[l].child[now]].cnt;
 			if(x==0)now^=1;
 			u=tree[u].child[now],v=tree[v].child[now],l=tree[l].child[now];
-			tmp|=(now<<i);
+			if(x)tmp|=(1<<i);
 		}
-		ans=max(ans,tmp^K);
+		ans=max(ans,tmp);
 		return ans;
 	}
 }trie;
 
+
 int main(){
+	while(scanf("%d%d",&n,&m)==2){
+		for(int i=1;i<=n;i++)scanf("%d",&a[i]);
+		for(int i=1;i<=n;i++)G[i].clear();
+		for(int i=1;i<n;i++){
+			int u,v;
+			scanf("%d%d",&u,&v);
+			G[u].push_back(v);
+			G[v].push_back(u);
+		}
+		trie=Trie();
+		while(m--){
+			int x,y,z;
+			scanf("%d%d%d",&x,&y,&z);
+			printf("%d\n",trie.query(x,y,z));
+		}
+	}
 	return 0;
 }
