@@ -1,35 +1,37 @@
 #include<iostream>
-#include<deque>
 #include<cstring>
-#include<algorithm>
-#include<set>
-#include<queue>
 #include<vector>
-#include<functional>
-#define MAX_N 100005
-#define MAX_QN 1003
+#include<algorithm>
+#include<cstdio>
+#include<queue>
+#include<deque>
+#include<set>
 using namespace std;
 
-struct node{
-	deque<int> que;
-	set<int> se;
-	int sum;
-	node(){
-		while(que.size())que.pop_front();
-		se.clear();
-		sum=0;
+int a[MAX_N];
+int N;
+
+struct BlockArray{
+	int blockSize,blockNum;
+	struct Block{
+		set<int> se;
+		deque<int> que;
+		int sum,asum;
+		Block(){
+			se.clear();
+			while(que.size())que.pop_front();
+			sum=0,asum=0;
+		}
+	}Ar[MAX_S];
+	BlockArray(){
+		blockSize=sqrt(N)+1;
+		blockNum=0;
+		for(int i=1;i<=N;i+=blockSize){
+			Ar[++blockNum]=Block();
+		}
 	}
-}a[MAX_QN];
+	void insert(int p,int x){
+		
+	}
+}block;
 
-int n;
-prioriy_queue<int,vector<int>,greater<int> > que;
-
-void insert(int p){
-	int now=que.top();
-	que.pop();
-	
-}
-
-int main(){
-	return 0;
-}

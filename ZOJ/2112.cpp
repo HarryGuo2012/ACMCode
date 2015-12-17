@@ -8,13 +8,13 @@
 #include<ctime>
 #include<stack>
 #include<cstdio>
+#include<cmath>
 #define MAX_N 50004
-#define MAX_A 1550006
+#define MAX_M 10004
+#define MAX_S 233
 using namespace std;
 
-int a[MAX_N];
-
-const static int TreapSize = MAX_A;
+const static int TreapSize = MAX_N+MAX_M;
 struct node{
     node * ch[2];
     int key , v , s , cnt ;
@@ -171,118 +171,119 @@ struct Treap
     }
 };
 
-int N,M;
+int a[MAX_N];
+int N;
 
-struct SegmentTree {
-#define lchild L,m,v<<1
-#define rchild m+1,R,v<<1|1
+struct BlockArray{
+	int blockSize,blockNum;
+	struct Block{
+		int L,R;
+		Treap tr;
+		Block(){}
+		Block(int l,int r):L(l),R(r){
+			tr.init();
+		}
+	}Ar[MAX_S];
+	BlockArray(){
+		blockSize=sqrt(N)+1;
+		blockNum=0;
+		for(int i=1;i<=N;i+=blockSize){
+			Ar[++blockNum]=Block(i,i+blockSize-1);
+		}
+	}
+	int getInd(int i){
+		return (i-1)/blockSize+1;
+	}
+	void build(){
+		for(int i=1;i<=N;i++)
+			Ar[getInd(i)].tr.insert(a[i]);
+	}
+	//change a[t] to x
+	void update(int t,int x){
+		int i=t;
+		t=getInd(t);
+		Ar[t].tr.remove(a[i]);
+		Ar[t].tr.insert(x);
+		a[i]=x;
+	}
+	//How many numbers are less than x from l to r
+	int query(int l,int r,int x){
+		int res=0;
+		for(int i=getInd(l);i<=getInd(r);i++){
+			if(l<=Ar[i].L&&Ar[i].R<=r)
+				res+=Ar[i].tr.count_less(x);
+			else{
+				int s=max(l,Ar[i].L),t=min(r,Ar[i].R);
+				for(int j=s;j<=t;j++)if(a[j]<x)res++;
+			}
+		}
+		return res;
+	}
+}block;
 
-    struct Node {
-        Treap tr;
+int M;
+int T;
 
-        Node() {
-            tr.init();
-        }
+struct Qu{
+	char op[2];
+	int s,t,x;
+}allOp[MAX_M];
 
-    } tree[MAX_N*4];
+vector<int> vec;
+int Hash[MAX_N+MAX_M];
 
-    SegmentTree() { }
-
-    void build(int L = 1, int R = N, int v = 1) {
-        tree[v] = Node();
-        for (int i = L; i <= R; i++)
-            tree[v].tr.insert(a[i]);
-        if (L == R)return;
-        int m = (L + R) >> 1;
-        build(lchild);
-        build(rchild);
-    }
-
-    void update(int i, int x, int L = 1, int R = N, int v = 1) {
-        tree[v].tr.remove(a[i]);
-        tree[v].tr.insert(x);
-        if(L==R)return;
-        int m = (L + R) >> 1;
-        if (i <= m)update(i, x, lchild);
-        if (i > m)update(i, x, rchild);
-    }
-
-    //change a[i] to x
-    int query(int a, int b, int x, int L = 1, int R = N, int v = 1) {
-        if (a <= L && R <= b)return tree[v].tr.count_less(x);
-        int res = 0;
-        int m = (L + R) >> 1;
-        if (a <= m)res += query(a, b, x, lchild);
-        if (b > m)res += query(a, b, x, rchild);
-        return res;
-    }
-}seg;
-
-
-set<int> se[MAX_A];
-int num[MAX_N];
-
-int getA(int i,int x){
-    if(se[x].empty())return 0;
-    set<int>::iterator it=se[x].lower_bound(i);
-    if(it==se[x].begin())return 0;
-    it--;
-    return *it;
+int main(){
+	//freopen("data.txt","r",stdin);
+	//freopen("WA.txt","w",stdout);
+	scanf("%d",&T);
+	while(T--){
+		vec.clear();
+		scanf("%d%d",&N,&M);
+		for(int i=1;i<=N;i++){
+			scanf("%d",&a[i]);
+			vec.push_back(a[i]);
+		}
+		for(int i=1;i<=M;i++){
+			scanf("%s",allOp[i].op);
+			if(allOp[i].op[0]=='Q')scanf("%d%d%d",&allOp[i].s,&allOp[i].t,&allOp[i].x);
+			else{
+				scanf("%d%d",&allOp[i].t,&allOp[i].x);
+				vec.push_back(allOp[i].x);
+			}
+		}
+		sort(vec.begin(),vec.end());
+		for(int i=1;i<=N;i++){
+			int tmp=a[i];
+			a[i]=lower_bound(vec.begin(),vec.end(),a[i])-vec.begin();
+			Hash[a[i]]=tmp;
+		}
+		for(int i=1;i<=M;i++)
+			if(allOp[i].op[0]=='C'){
+				int tmp=allOp[i].x;
+				allOp[i].x=lower_bound(vec.begin(),vec.end(),tmp)-vec.begin();
+				Hash[allOp[i].x]=tmp;
+			}
+		init();
+		block=BlockArray();	
+		block.build();
+		//cout<<block.blockSize<<endl;
+		for(int i=1;i<=M;i++){
+			if(allOp[i].op[0]=='Q'){
+				int l=-1,r=MAX_N+MAX_M;
+				while(r-l>1){
+					int m=(r+l)>>1;
+					if(block.query(allOp[i].s,allOp[i].t,m)<=allOp[i].x-1)
+						l=m;
+					else 
+						r=m;
+				}
+				printf("%d\n",Hash[l]);
+			}
+			else
+				block.update(allOp[i].t,allOp[i].x);
+		}
+	}
+	return 0;
 }
 
-int main() {
-    init();
-    //freopen("data.txt","r",stdin);
-    //freopen("WA.txt","w",stdout);
-    scanf("%d%d", &N, &M);
-    for (int i = 1; i <= N; i++) {
-        int t;
-        scanf("%d", &t);
-        num[i] = t;
-        se[t].insert(i);
-    }
-    for (int i = 1; i <= N; i++)
-        a[i] = getA(i, num[i]);
-    /*
-    for(int i=1;i<=N;i++)
-        cout<<a[i]<<" ";
-    cout<<endl;
-     */
-    seg.build();
-    while (M--) {
-        char op[2];
-        int x, y;
-        scanf("%s %d%d", op, &x, &y);
-        if (op[0] == 'M') {
-            x++;
-            if(y==num[x])continue;
-            seg.update(x, getA(x, y));
-            set<int>::iterator it = se[y].lower_bound(x+1);
-            if (it != se[y].end()){
-                seg.update(*it, x);
-                a[*it] = x;
-            }
-            it=se[num[x]].lower_bound(x+1);
-            if(it!=se[num[x]].end()){
-                seg.update(*it,getA(x,num[x]));
-                a[*it]=getA(x,num[x]);
-            }
-            a[x] = getA(x, y);
-            se[num[x]].erase(x);
-            num[x] = y;
-            se[y].insert(x);
-            /*
-            for(int i=1;i<=N;i++)
-                cout<<num[i]<<" ";
-            cout<<endl;
-            for(int i=1;i<=N;i++)
-                cout<<a[i]<<" ";
-            cout<<endl;
-             */
-        }
-        else
-            printf("%d\n", seg.query(x + 1, y, x + 1));
-    }
-    return 0;
-}
 
