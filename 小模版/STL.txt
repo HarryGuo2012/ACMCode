@@ -1,0 +1,25 @@
+next_permutation  生成全序列
+lower_bound(a[i].begin(),a[i].end(),k);返回vector a[i]中>=k的第一个数的指针。	
+upper_bound返回>k的第一个数的指针。
+
+
+(1) int 类型的next_permutation
+ 
+int main()
+{
+ 	int a[3];
+	a[0]=1;a[1]=2;a[2]=3;
+	 do
+	{
+		cout<<a[0]<<" "<<a[1]<<" "<<a[2]<<endl;
+	} while (next_permutation(a,a+3)); 		//参数3指的是要进行排列的长度
+ 
+//如果存在a之后的排列，就返回true。如果a是最后一个排列没有后继，返回false，每执行一次，a就变成它的后继
+
+random_shuffle(p,p+n)乱序
+int  __builtin_popcount(i) 计算无符号32位整型二进制有几个1
+int  __builtin_ffs (unsigned int x) 返回右起第一个‘1’的位置。
+int  __builtin_clz (unsigned int x) 返回左起第一个‘1’之前0的个数。
+int  __builtin_ctz (unsigned int x) 返回右起第一个‘1’之后的0的个数。
+此外，这些函数都有相应的usigned long和usigned long long版本，只需要在函数名后面
+加上l或ll就可以了，比如int __builtin_clzll。

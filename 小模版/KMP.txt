@@ -1,0 +1,28 @@
+void getfail(char *P,int *F)
+{
+    int m=strlen(P);
+    F[0]=0;F[1]=0;
+    for (int i=1;i<m;i++){
+        int j=F[i];
+        while (j && P[i]!=P[j]) j=F[j];
+        F[i+1]=P[i]==P[j]?j+1:0; 
+			        
+    }
+}
+
+void KMP(char *T,char *P,int *F)
+{
+    int n=strlen(T),m=strlen(P);
+    getfail(P,F);
+    int j=0;
+    for (int i=0;i<n;i++){
+        while (j && P[j]!=T[i]) j=F[j];
+        if (P[j]==T[i]) j++;
+        if (j==m) {
+            printf("here\n");
+            j=F[j];
+        }
+    }
+}
+
+可以直接建字符数组然后引用

@@ -1,0 +1,37 @@
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <stdlib.h>
+#include <time.h>
+#include<cstring>
+#include<cstdio>
+#include<vector>
+#include<string>
+#include<algorithm>
+#include <limits.h>
+#include<cmath>
+#include<map>
+#include<queue>
+#include<set>
+using namespace std;
+
+
+#define LL long long
+
+//为自己加油O(∩_∩)O~
+
+const long long  mod =1000000007;  //这个必须是质数
+
+int main()
+{
+    
+    return 0;
+}
+
+
+
+
+
+
+
+

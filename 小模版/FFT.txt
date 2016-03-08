@@ -1,0 +1,75 @@
+﻿#include<bits/stdc++.h>
+using namespace std;
+#define LL long long
+const int maxn=2000000;
+const double pi=acos(-1.0);
+struct Complex {
+    double x,y;
+    Complex(double xx,double yy):x(xx),y(yy) {}
+    Complex() {}
+    Complex operator + (Complex a) {
+        return Complex(a.x+x,a.y+y);
+    }
+    Complex operator - (Complex a) {
+        return Complex(x-a.x,y-a.y);
+    }
+    Complex operator * (Complex a) {
+        return Complex(x*a.x-y*a.y,x*a.y+y*a.x);
+    }
+
+};
+void build(Complex _P[],Complex P[],int n,int m,int curr,int &cnt) {
+    if (m==n) {
+        _P[curr]=P[cnt++];
+    } else {
+        build(_P,P,n,m*2,curr,cnt);
+        build(_P,P,n,m*2,curr+m,cnt);
+    }
+}
+void FFT(Complex P[],int n,int oper) {
+    static Complex _P[maxn];
+    int cnt=0;
+    build(_P,P,n,1,0,cnt);
+    copy(_P,_P+n,P);
+    for (int d=0; (1<<d)<n; d++) {
+        int m=1<<d;
+        int m2=m*2;
+        double p0=pi/m*oper;
+        Complex unit_p0=Complex(cos(p0),sin(p0));
+        for (int i=0; i<n; i+=m2) {
+            Complex unit=Complex(1,0);
+            for (int j=0; j<m; j++) {
+                Complex &P1=P[i+j+m],&P2=P[i+j];
+                Complex t=unit * P1;
+                P1=P2-t;
+                P2=P2+t;
+                unit=unit*unit_p0;
+            }
+
+        }
+    }
+}
+Complex P[maxn],Q[maxn];
+LL ha[maxn];
+char z[maxn];
+int main() {
+    freopen("duel.in","r",stdin);
+    freopen("duel.out","w",stdout);
+    scanf("%s",z);
+    int len=strlen(z);
+    int n=1;
+    while (n<=len) n<<=1;n<<=1;
+    for (int j=0;j<len;j++) Q[j]=P[j]=Complex(z[j]-'0',0);
+    FFT(P,n,1);FFT(Q,n,1);
+    for (int j=0;j<n;j++) P[j]=Q[j]*P[j];
+    FFT(P,n,-1);
+    for (int j=0;j<n;j++) ha[j]=(LL)(P[j].x/n+0.5);
+   // for (int j=0;j<n;j++) cout<<ha[j]<<endl;
+    LL ans=0;
+    for (int j=0;j<n;j+=2){
+        if (z[j/2]=='1')
+            ans+=(ha[j]-1)/2;
+    }
+    printf("%I64d\n",ans);
+    return 0;
+}
