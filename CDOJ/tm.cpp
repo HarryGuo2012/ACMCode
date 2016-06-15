@@ -1,86 +1,93 @@
-#include <cstdio>
-#include <cstring>
-#include <map>
-#include <queue>
-#include <vector>
-
-struct Node {
-    Node *left;
-    Node *right;
-
-    Node(Node *left, Node *right) : left(left), right(right) {}
-
-    long  at(int, int, int);
-    Node* insert(int, int, int, long);
-};
-
-Node* null;
-
-long Node::at(int l, int r, int k) {
-    if (this == null) {
-        return 0;
+#include<stdio.h>
+#include<stdlib.h>
+#include<iostream>
+using namespace std;
+#define MAXSIZE 10
+#define TURE 1
+#define FALSE 0
+#define OK 1
+#define ERROR 0
+#define OVERLOW -1
+typedef struct 
+{   int elem[MAXSIZE];
+    int length;
+}Seqlist;
+void init_seqlist(Seqlist *l)
+{   l->length=0;}                               //初始化线性表
+int Insert_Seqlist(Seqlist *l,int i,int x)
+{   int j;
+    if(l->length==MAXSIZE)
+    {   printf("full");
+        return OVERLOW;
     }
-    if (l == r) {
-        return (long)(left);
+    if(i<0||i>l->length+1)
+    {   printf("wrong place");
+        return ERROR;
     }
-    int m = l + r >> 1;
-    return k <= m ? left->at(l, m, k) : right->at(m + 1, r, k);
-}
-
-Node* Node::insert(int l, int r, int k, long v) {
-    if (k < l || r < k) {
-        return this;
+    for(j=l->length-1;j>=i;j--)
+        l->elem[j+1]=l->elem[j];
+        l->elem[i]=x;
+        l->length++;
+        return OK;
+}                                           //顺序表插入
+int Dlete_Seqlist(Seqlist *l,int i)
+{   int j;
+    if(i<1||i>l->length)
+    {   printf("not exist");
+        return ERROR;
     }
-    if (l == r) {
-        return new Node((Node*)v, null);
+    for(j=i;j<=l->length-1;j++)
+    {   l->elem[j]=l->elem[j+1];
+        l->length--;
     }
-    int m = l + r >> 1;
-    return new Node(left->insert(l, m, k, v), right->insert(m + 1, r, k, v));
-}
-
-Node* update(int n, Node *r, const std::map<int, int> &children) {
-    for (const auto &it : children) {
-        r = r->insert(1, n, it.first, it.second);
+    return OK;
+}                                       //顺序表删除
+void Create_Seqlist(Seqlist *l)
+{
+    int i,n,m;
+    printf("输入表长:\n");
+    scanf("%d",&n);
+    l->length=n;
+    printf("输入数值:\n");
+    for(i=1;i<=n;i++)
+    {   scanf("%d",&m);
+        l->elem[i]=m;
     }
-    return r;
-}
-
-int main() {
-    int n;
-    scanf("%d", &n);
-    std::vector<int> parent(n + 1);
-    for (int i = 1; i <= n; ++ i) {
-        scanf("%d", &parent[i]);
+}                                       //顺序表创建
+int Location(Seqlist *l,int x)
+{   int i=1;
+    while(i<=l->length&&l->elem[i]!=x)
+        i++;
+    if(i>l->length)
+        return -1;
+    else 
+        return i;
+}                                           //定位
+void Print(Seqlist *l)
+{   int i;
+    printf("线性表变为：\n");
+    for(i=1;i<=l->length;i++)
+    {   printf("%2d",l->elem[i]);}
+}                                       //打印顺序表
+int main()
+{   Seqlist a;
+    int i,x,ch;
+    init_seqlist(&a);
+    Create_Seqlist(&a);
+    printf("请输入：1.插入;2.删除\t");
+    scanf("%d",&ch);
+    switch(ch)
+    {
+        case 1:printf("请输入位置和数值：\n");
+            scanf("%d%d",&i,&x);
+            Insert_Seqlist(&a,i,x);
+            break;
+        case 2:printf("请输入删除的位置：\n");
+            scanf("%d",&i);
+            Dlete_Seqlist(&a,i);
+            break;
+        default:exit(0);
     }
-    std::vector<std::map<int, int>> children(n + 1);
-    for (int i = 1; i <= n; ++ i) {
-        int c;
-        scanf("%d", &c);
-        children[parent[i]][c] = i;
-    }
-    null = new Node(NULL, NULL);
-    null->left = null->right = null;
-    std::vector<int>   fail(n + 1);
-    std::vector<Node*> transfer(n + 1);
-    transfer[0] = update(n, null, children[0]);
-    std::queue<int> queue;
-    for (const auto &it : children[0]) {
-        int v = it.second;
-        fail[v] = 0;
-        queue.push(v);
-    }
-    while (!queue.empty()) {
-        int u = queue.front();
-        queue.pop();
-        transfer[u] = update(n, transfer[fail[u]], children[u]);
-        for (const auto &it : children[u]) {
-            int v = it.second;
-            fail[v] = transfer[fail[u]]->at(1, n, it.first);
-            queue.push(v);
-        }
-    }
-    for (int i = 1; i <= n; ++ i) {
-        printf("%d%c", fail[i], " \n"[i == n]);
-    }
+    Print(&a);
     return 0;
 }

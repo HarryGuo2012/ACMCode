@@ -1,28 +1,50 @@
-#include <cstdio>
-
-#define MAX_N 10004
-
-int N, Q;
-
-int A[MAX_N];
-
-int main(){
-	scanf("%d%d", &N, &Q);
-	for(int i = 1; i <= N; i++)
-		scanf("%d", &A[i]);
-	while(Q--){
-		int t, x, y;
-		scanf("%d%d", &t, &x);
-		if(t == 1){
-			scanf("%d", &y);
-			for(int j = x; j <= N; j++){
-				A[j] += y;
-				y--;
-				if(y < 0) y = 0;
-			}
-		}
-		else
-			printf("%d\n", A[x]);
-	}
-	return 0;
+#include<cstdio>
+#include<cstring>
+#include<cstdlib>
+#include<cmath>
+#include<iostream>
+#include<algorithm>
+using namespace std;
+const int MAXN=100005;
+vector<int>e[MAXN],res;
+int cnt[MAXN],out[MAXN];
+bool key[MAXN];
+void dfs(int u)
+{
+    for(int i=0;i<(int)e[u].size();i++)
+    {
+        dfs(e[u][i]);
+        cnt[u]+=cnt[e[u][i]];
+    }
+    if(key[u])
+    {
+        if(cnt[u])exit(0*printf("-1"));
+        else res.push_back(u);
+    }
+}
+int main()
+{
+    int n,m;
+    scanf("%d%d",&n,&m);
+    for(int i=1;i<=m;i++)
+    {
+        int p,q;
+        scanf("%d%d",&p,&q);
+        e[p].push_back(q);
+        out[q]++;
+    }
+    for(int i=1;i<=n;i++)
+    {
+        int a;
+        scanf("%d",&a);
+        key[a]=1;
+        cnt[i]++;
+        cnt[a]--;
+    }
+    for(int i=1;i<=n;i++)
+        if(!out[i])dfs(i);
+    printf("%d\n",(int)res.size());
+    for(int i=0;i<(int)res.size();i++)
+        printf("%d\n",res[i]);
+    return 0;
 }

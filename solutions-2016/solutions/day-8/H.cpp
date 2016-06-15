@@ -51,6 +51,7 @@ int main(void){
 	}
 	
 	ll ans = (N + 1) * power[N] % MOD;
+	
 	for(i=1;i<=N;i++) ans = (ans - dp2[i] * power[N-i] % MOD * (N-i+1) % MOD + MOD) % MOD;
 	
 	cout << ans << endl;

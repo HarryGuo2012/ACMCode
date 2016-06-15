@@ -8,9 +8,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 
-public class Solution {
+public class Main {
     public static void main(String[] args) {
-        new Solution().run();
+        new Main().run();
     }
 
     public void run() {

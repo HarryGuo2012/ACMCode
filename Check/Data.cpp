@@ -1,21 +1,32 @@
 #include <iostream>
-#include <cstdlib>
 #include <ctime>
+#include <cstdlib>
+#include <vector>
+using namespace std;
 
-int main(){
+vector<int> G[100];
+
+int b[100];
+int n;
+void dfs(int u, int s) {
+	int i = 0;
+	while((s >> i & 1) == 0) i = rand() % n + 1;
+	b[u] = i;
+	for (auto v : G[u])
+		dfs(v, s | (1 << v));
+}
+
+int main() {
 	srand(time(0));
-	int N = rand() % 10 + 1, Q = rand() % 10 + 1;
-	std::cout << N << " " << Q << std::endl;
-	for(int i = 1; i <= N; i++)
-		std::cout << rand() % 10 + 1 << " ";
-	std::cout << std::endl;
-	for(int i = 1; i <= Q; i++){
-		int t = rand() % 2 + 1;
-		std::cout << t << " ";
-		if(t == 1)
-			std::cout << rand() % N + 1 << " " << rand() % 10 + 1 << std::endl;
-		else
-			std::cout << rand() % N + 1 << " " << std::endl;
+	n = rand() % 10 + 1;
+	cout << n << " " << n - 1 << endl;
+	for (int i = 2; i <= n; i++) {
+		int t = rand() % (i - 1) + 1;
+		G[t].push_back(i);
+		cout << t << " " << i << endl;
 	}
+	dfs(1, 2);
+	for (int i = 1; i <= n; i++)
+		cout << b[i] << endl;
 	return 0;
 }
